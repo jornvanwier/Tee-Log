@@ -4,7 +4,7 @@ extern crate clap;
 use chrono::prelude::*;
 use clap::{App, ArgMatches};
 use std::fs::{File, OpenOptions};
-use std::io::{self, BufReader, BufWriter};
+use std::io::{self, BufWriter};
 use std::io::prelude::*;
 use std::fmt::Display;
 
@@ -17,8 +17,7 @@ fn main() {
     let mut file = BufWriter::new(file);
 
     let stdin = io::stdin();
-    let stdin = stdin.lock();
-    let mut stdin = BufReader::new(stdin);
+    let mut stdin = stdin.lock();
 
     // Initialize a writer for stdout, only used when print is true
     let stdout = io::stdout();
@@ -35,7 +34,7 @@ fn main() {
           &mut stdout,
           print);
 
-    while stdin.read_line(&mut buf).unwrap() > 0 {
+    while stdin.read_line(&mut buf).expect("Couldn't read from stdin") > 0 {
         let line = if timestamp {
             format!("[{}] {}", get_timestamp(), buf)
         } else {
@@ -69,9 +68,9 @@ fn get_arguments() -> ArgMatches<'static> {
         .author("Jorn van Wier <jornvanwier@gmail.com>")
         .about("Reads the output of a program and outputs it to a file with an added timestamp")
         .args_from_usage("
-            [file] -f, --file <FILE> 'Sets the file to output to'
-            [print] -p, --print 'Print to stdout'
-            [notimestamp] -n, --notimestamp 'Don't add a timestamp to the messages'
+            [file]          -f, --file <FILE>   'Sets the file to output to'
+            [print]         -p, --print         'Print to stdout'
+            [notimestamp]   -n, --notimestamp   'Don't add a timestamp to the messages'
         ")
         .get_matches()
 }
