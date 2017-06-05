@@ -26,6 +26,7 @@ fn main() {
     let mut stdout = BufWriter::new(stdout);
 
     let print = matches.is_present("print");
+    let timestamp = !matches.is_present("notimestamp");
 
     let mut buf: String = String::new();
 
@@ -33,11 +34,15 @@ fn main() {
           &mut file,
           &mut stdout,
           print);
-    while stdin.read_line(&mut buf).unwrap() > 0 {
-        // Shouldn't use println here because the lines already contain a newline
-        let line = format!("[{}] {}", get_timestamp(), buf);
 
-        let _ = write(line, &mut file, &mut stdout, print);
+    while stdin.read_line(&mut buf).unwrap() > 0 {
+        let line = if timestamp {
+            format!("[{}] {}", get_timestamp(), buf)
+        } else {
+            format!("{}", buf)
+        };
+
+        write(line, &mut file, &mut stdout, print);
 
         buf.clear();
     }
@@ -66,6 +71,7 @@ fn get_arguments() -> ArgMatches<'static> {
         .args_from_usage("
             [file] -f, --file <FILE> 'Sets the file to output to'
             [print] -p, --print 'Print to stdout'
+            [notimestamp] -n, --notimestamp 'Don't add a timestamp to the messages'
         ")
         .get_matches()
 }
